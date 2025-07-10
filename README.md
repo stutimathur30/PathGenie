@@ -1,6 +1,24 @@
 # PathGenie
-PathGenie is a Python-based, AI-powered job recommendation system developed using Flask 
-for the web interface. It enables students and professionals to discover roles that best match 
-their skillsets by leveraging supervised and unsupervised machine learning, neural networks, 
-and NLP-based resume parsing. The system intelligently analyses user input and job datasets 
-to offer accurate, personalized job recommendations.
+An intelligent job recommendation platform that matches candidates with ideal roles using resume parsing and skill analysis.
+
+## ✨ Features
+
+- **Resume Analysis**: PDF parsing to extract skills and experience
+- **Smart Matching**: AI-powered job recommendations
+- **Interactive Dashboard**: Visual analytics of job market trends
+- **Modern UI**: Immersive video background with glassmorphism design
+- **Dual Input**: Upload resumes or enter skills manually
+
+## 🛠️ Tech Stack
+
+**Frontend**:
+- Flask Templating (HTML/CSS/JS)
+- Plotly for visualizations
+- Particles.js for interactive background
+
+**Backend**:
+- Python Flask
+- Pandas for data analysis
+- PDFplumber for resume parsing
+
+
