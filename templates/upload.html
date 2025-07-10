@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Upload Resume - PathGenie{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-primary mb-4"> Resume Job Recommender</h2>
+
+    <!-- Upload Form -->
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="resume" class="form-label">Upload your resume (PDF)</label>
+            <input type="file" class="form-control" id="resume" name="resume" accept=".pdf" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">🚀 Get Recommendations</button>
+    </form>
+
+    {% if matched_jobs %}
+        <hr class="my-4">
+        <h4 class="text-success">🎯 Recommended Jobs:</h4>
+
+        {% for job in matched_jobs %}
+            <div class="card my-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ job.job_title }} at <span class="text-dark">{{ job.company }}</span></h5>
+                    <p class="card-text">
+                         <strong>{{ job.location }}</strong><br>
+                         Skills Required: {{ job.skills }}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    {% elif skills %}
+        <hr>
+        <div class="alert alert-warning mt-4">No jobs matched for extracted skills.</div>
+    {% endif %}
+</div>
+{% endblock %}

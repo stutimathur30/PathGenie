@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PathGenie Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .visualization-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            height: 400px;
+        }
+        
+        .chart-title {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .trend-analysis {
+            grid-column: span 2;
+            height: 450px;
+        }
+        
+        .skill-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .skill-tag {
+            background: rgba(99, 102, 241, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .visualization-row {
+                grid-template-columns: 1fr;
+            }
+            .trend-analysis {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-chart-network"></i> PathGenie Analytics Hub</h1>
+            <p>Real-time insights into job market trends and candidate matching</p>
+        </div>
+        
+        <!-- Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3><i class="fas fa-briefcase"></i> Total Jobs</h3>
+                <div class="metric-value">{{ total_jobs }}</div>
+                <p>Across all categories</p>
+            </div>
+            
+            <div class="metric-card">
+                <h3><i class="fas fa-users"></i> Active Candidates</h3>
+                <div class="metric-value">{{ candidate_count }}</div>
+                <p>Last 30 days</p>
+            </div>
+            
+            <div class="metric-card">
+                <h3><i class="fas fa-lightbulb"></i> Top Skill</h3>
+                <div class="metric-value">{{ top_skills.index[0] }}</div>
+                <p>Demand: {{ top_skills.values[0] }} jobs</p>
+            </div>
+            
+            <div class="metric-card">
+                <h3><i class="fas fa-percentage"></i> Match Rate</h3>
+                <div class="metric-value">{{ match_rate }}%</div>
+                <p>Successful candidate-job matches</p>
+            </div>
+        </div>
+        
+        <!-- Advanced Visualizations -->
+        <div class="visualization-row">
+            <div class="chart-container">
+                <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Top Required Skills</h3>
+                <div id="skillsChart" style="height: 320px;"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title"><i class="fas fa-chart-pie"></i> Jobs by Category</h3>
+                <div id="categoriesChart" style="height: 320px;"></div>
+            </div>
+            
+            <div class="chart-container trend-analysis">
+                <h3 class="chart-title"><i class="fas fa-chart-line"></i> Monthly Application Trends</h3>
+                <canvas id="trendChart" height="250"></canvas>
+            </div>
+        </div>
+        
+        <!-- Skill Cloud -->
+        <div class="chart-container">
+            <h3 class="chart-title"><i class="fas fa-tags"></i> Skill Cloud</h3>
+            <div class="skill-cloud">
+                {% for skill, count in top_skills.items() %}
+                <span class="skill-tag" style="font-size: {{ 0.8 + (count/top_skills.values[0]) }}rem;">
+                    {{ skill }} ({{ count }})
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <a href="/" class="btn" style="background: var(--primary);">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <a href="#" class="btn" style="background: var(--secondary);">
+                <i class="fas fa-download"></i> Export Report
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Skills Bar Chart
+        Plotly.newPlot('skillsChart', [{
+            type: 'bar',
+            x: {{ top_skills.index.tolist()|tojson }},
+            y: {{ top_skills.values.tolist()|tojson }},
+            marker: {
+                color: '#6366f1',
+                line: {
+                    color: '#4f46e5',
+                    width: 1.5
+                }
+            }
+        }], {
+            margin: {t: 0, l: 40, r: 0, b: 40},
+            xaxis: {tickangle: -45},
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: 'white'}
+        });
+
+        // Categories Pie Chart
+        Plotly.newPlot('categoriesChart', [{
+            type: 'pie',
+            labels: {{ jobs_by_role.index.tolist()|tojson }},
+            values: {{ jobs_by_role.values.tolist()|tojson }},
+            marker: {
+                colors: ['#6366f1', '#10b981', '#8b5cf6', '#ec4899', '#f59e0b']
+            },
+            textinfo: 'label+percent',
+            insidetextorientation: 'radial'
+        }], {
+            margin: {t: 0, l: 0, r: 0, b: 0},
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: 'white'},
+            showlegend: false
+        });
+
+        // Trend Analysis Chart (Chart.js)
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Job Postings',
+                    data: [120, 190, 170, 220, 280, 310],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Applications',
+                    data: [80, 150, 140, 180, 240, 290],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
